@@ -44,6 +44,7 @@ const InputForm = () => {
     padding: "5px",
   }
 
+  
   return (
     <div style={inputContainer}>
       <h1> 2025 스파르타 올림픽</h1>
