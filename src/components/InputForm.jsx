@@ -31,6 +31,7 @@ const InputForm = () => {
     border: "0px",
     borderRadius: "10px",
     padding: "5px",
+    cursor : 'pointer'
   };
 
   const getInitialMedalRecords = () => {
@@ -43,6 +44,7 @@ const InputForm = () => {
   const [silverMedal, setSilverMedal] = useState(0);
   const [bronzeMedal, setBronzeMedal] = useState(0);
   const [medalRecords, setMedalRecords] = useState(getInitialMedalRecords);
+  localStorage.setItem("medalRecords", JSON.stringify(medalRecords));
 
   // getInitialMedalRecords() 가 아닌 함수자체를 참조한 이유 : ()를 사용하면 state가 변할때마다 실행되기 때문이다
   // useState의 함수 자체를 전달하면 React는 해당 함수의 반환값을 초기값으로 설전한다.  이를 지연 평가(Lazy Initialization)이라 한다.
@@ -76,7 +78,6 @@ const InputForm = () => {
           return b.goldMedal - a.goldMedal;
         })
       );
-      localStorage.setItem("medalRecords", JSON.stringify(medalRecords));
       alert("국가가 성공적으로 추가되었습니다.");
     } else {
       alert("0 이상의 숫자만 입력 가능합니다.");
@@ -94,6 +95,7 @@ const InputForm = () => {
     const updatedMedalRecords = medalRecords.map((countries) => {
       if (countries.nation === nation) {
         nationFound = true; // 일치하는 국가가 있음을 표시
+
         return {
           ...countries, // 기존 데이터를 복사
           nation: nation,
@@ -105,11 +107,16 @@ const InputForm = () => {
       }
       return countries; // 일치하지 않는 경우 기존 데이터 유지
     });
-    setMedalRecords(updatedMedalRecords);
-
     if (!nationFound) {
-      alert("해당하는 국가가 없습니다."); // 국가가 없을 경우 알림 표시
-    } 
+      alert("존재하지 않는 국가 입니다."); // 국가가 없을 경우 알림 표시
+    }
+    setMedalRecords(
+      updatedMedalRecords.sort((a, b) => {
+        return b.goldMedal - a.goldMedal;
+      })
+    );
+    
+
     setNation("");
     setGoldMedal("");
     setSilverMedal("");
@@ -120,8 +127,21 @@ const InputForm = () => {
     const updatedRecords = medalRecords.filter(
       (record) => record.nation !== nation
     );
+    
     setMedalRecords(updatedRecords);
   };
+
+  const handleDescendingSort= ()=>{
+    const sortedRecords = medalRecords.sort(
+      (a,b) =>{return b.sumMedals - a.sumMedals}
+      )
+      console.log(sortedRecords);
+      setMedalRecords([...sortedRecords])
+  }
+
+  //  리액트가 변화를 감지 하지 못하는 이유는 원본배열을 변경했기 때문이다.
+// 따라서 새로운 배열을 반환해서 useState를 통해 저장하면 해결된다.
+//  .map or spread 연산자
 
   return (
     <div style={inputContainer}>
@@ -178,6 +198,7 @@ const InputForm = () => {
       <MedalList
         handleDelete={handleDelete}
         medalRecords={medalRecords}
+        handleDescendingSort={handleDescendingSort}
       ></MedalList>
     </div>
   );
