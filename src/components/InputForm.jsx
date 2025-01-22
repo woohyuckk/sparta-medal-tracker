@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import MedalList from "./MedalList";
 
 const InputForm = () => {
@@ -8,15 +8,15 @@ const InputForm = () => {
     justifyContent: "center",
     alignItems: "center",
     flexWrap: "wrap",
-    overflow :'hidden',
-    boxSizing : 'border-box',
+    overflow: "hidden",
+    boxSizing: "border-box",
     gap: "12px",
     padding: "20px",
-    margin : '0 auto'
+    margin: "0 auto",
   };
   const InputFormContainer = {
     display: "flex",
-    flexWrap : 'wrap',
+    flexWrap: "wrap",
     gap: "12px",
   };
   const inputFormStyles = {
@@ -32,10 +32,11 @@ const InputForm = () => {
     borderRadius: "10px",
     padding: "5px",
   };
+
   const getInitialMedalRecords = () => {
     const storedRecords = localStorage.getItem("medalRecords");
     return storedRecords ? JSON.parse(storedRecords) : [];
-  }
+  };
 
   const [nation, setNation] = useState("");
   const [goldMedal, setGoldMedal] = useState(0);
@@ -44,18 +45,9 @@ const InputForm = () => {
   const [medalRecords, setMedalRecords] = useState(getInitialMedalRecords);
 
   // getInitialMedalRecords() 가 아닌 함수자체를 참조한 이유 : ()를 사용하면 state가 변할때마다 실행되기 때문이다
-  // useState의 함수 자체를 전달하면 React는 해당 함수의 반환값을 초기값으로 설전한다.  이를 지연 평가(Lazy Initialization)이라 한다. 
-
-
-
-  useEffect(() => {
-    localStorage.setItem("medalRecords", JSON.stringify(medalRecords));
-  }, [medalRecords]);
-
-  // useEffect medalRecords의 상태가 변할때마다 localStorage에 저장
+  // useState의 함수 자체를 전달하면 React는 해당 함수의 반환값을 초기값으로 설전한다.  이를 지연 평가(Lazy Initialization)이라 한다.
 
   const onSubmit = () => {
-  
     // 중복 여부 확인
     const isDuplicate = medalRecords.some(
       (nations) => nations.nation === nation
@@ -67,9 +59,8 @@ const InputForm = () => {
     // 숫자 유효성 확인
     if (goldMedal >= 0 && silverMedal >= 0 && bronzeMedal >= 0) {
       // 새 국가 추가
-      const sumMedals = goldMedal+silverMedal+bronzeMedal;
-      
-        
+      const sumMedals = goldMedal + silverMedal + bronzeMedal;
+
       const newNation = {
         nation,
         goldMedal,
@@ -77,7 +68,6 @@ const InputForm = () => {
         bronzeMedal,
         sumMedals,
       };
-      
 
       setMedalRecords(
         [...medalRecords, newNation].sort((a, b) => {
@@ -86,7 +76,7 @@ const InputForm = () => {
           return b.goldMedal - a.goldMedal;
         })
       );
-
+      localStorage.setItem("medalRecords", JSON.stringify(medalRecords));
       alert("국가가 성공적으로 추가되었습니다.");
     } else {
       alert("0 이상의 숫자만 입력 가능합니다.");
@@ -96,7 +86,34 @@ const InputForm = () => {
     setGoldMedal("");
     setSilverMedal("");
     setBronzeMedal("");
-  
+  };
+
+  const onUpdate = () => {
+    let nationFound = false; // 국가가 존재하는지 확인하는 플래그
+
+    const updatedMedalRecords = medalRecords.map((countries) => {
+      if (countries.nation === nation) {
+        nationFound = true; // 일치하는 국가가 있음을 표시
+        return {
+          ...countries, // 기존 데이터를 복사
+          nation: nation,
+          goldMedal: goldMedal,
+          silverMedal: silverMedal,
+          bronzeMedal: bronzeMedal,
+          sumMedals: goldMedal + silverMedal + bronzeMedal,
+        };
+      }
+      return countries; // 일치하지 않는 경우 기존 데이터 유지
+    });
+    setMedalRecords(updatedMedalRecords);
+
+    if (!nationFound) {
+      alert("해당하는 국가가 없습니다."); // 국가가 없을 경우 알림 표시
+    } 
+    setNation("");
+    setGoldMedal("");
+    setSilverMedal("");
+    setBronzeMedal("");
   };
 
   const handleDelete = (nation) => {
@@ -154,7 +171,9 @@ const InputForm = () => {
         <button style={haederButtonStyles} onClick={onSubmit}>
           국가추가
         </button>
-        <button style={haederButtonStyles}>업데이트</button>
+        <button style={haederButtonStyles} onClick={onUpdate}>
+          업데이트
+        </button>
       </div>
       <MedalList
         handleDelete={handleDelete}
